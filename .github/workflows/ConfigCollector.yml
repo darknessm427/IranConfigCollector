@@ -1,0 +1,69 @@
+name: Collector
+on:
+  workflow_dispatch:
+  
+  schedule:
+    - cron: "0 */2 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+    
+    - name: Build and run Golang file
+      run: |
+        go run ./main.go
+        
+    - name: Move Files to Bulk Directory
+      run: |
+        mkdir -p bulk
+        mv vmess_iran.txt bulk/
+        mv trojan_iran.txt bulk/
+        mv vless_iran.txt bulk/
+        mv ss_iran.txt bulk/
+        mv mixed_iran.txt bulk/
+    
+    - name: Create merge1.txt
+      run: |
+        cat ./bulk/ss_iran.txt ./bulk/trojan_iran.txt > ./bulk/merge1.txt
+        sed -i '/^\(ss:\/\/\|trojan:\/\/\)/!d' ./bulk/merge1.txt
+    
+    - name: Create merge2.txt
+      run: |
+        cat ./bulk/vmess_iran.txt ./bulk/vless_iran.txt > ./bulk/merge2.txt
+        sed -i '/^\(vmess:\/\/\|vless:\/\/\)/!d' ./bulk/merge2.txt
+
+    - name: Create merge3.txt
+      run: |
+        cat ./bulk/vmess_iran.txt ./bulk/ss_iran.txt ./bulk/trojan_iran.txt > ./bulk/merge3.txt
+        sed -i '/^\(vmess:\/\/\|ss:\/\/\|trojan:\/\/\)/!d' ./bulk/merge3.txt
+    
+    - name: Convert merge1.txt to base64 and save as b64_merge1.txt
+      run: |
+        base64 ./bulk/merge1.txt > ./bulk/b64_merge1.txt
+    
+    - name: Convert merge2.txt to base64 and save as b64_merge2.txt
+      run: |
+        base64 ./bulk/merge2.txt > ./bulk/b64_merge2.txt
+    
+    - name: Commit Changes
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
+        git pull origin main
+        git add ./bulk/*
+        git checkout main
+        git commit -m "✔️ $(date '+%Y-%m-%d %H:%M:%S') Collected"
+    
+    - name: Push Changes
+      uses: ad-m/github-push-action@master
+      with:
+        branch: main
