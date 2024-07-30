@@ -1,5 +1,5 @@
 # IranConfigCollector: VMESS/VLESS/SS/Trojan Configurations
-
+![rand](https://rand-xyz.now.sh/api/hello)
 This repository was created to collect free v2ray configs from related Telegram channels. Only the last 5 configurations from each channel are collected.
 
 The robot collects and stores the configs hourly in the bulk folder. Next, speed tests are taken and inactive configs are deleted. Finally, the final list is organized by protocol into subfolders. The top 200 configs are also saved in this file in different formats.
